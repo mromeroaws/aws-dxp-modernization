@@ -10,7 +10,7 @@
   --navy:#0B2B53; --navy-ink:#0B2B53; --orange:#C9531B; --orange-soft:#F7E3D8;
   --bg:#F4F5F7; --surface:#FFFFFF; --fg:#18222F; --muted:#5B6675; --line:#DCE0E6; --track:#E7EAEF;
   --good:#1E7A4C; --good-bg:#E2F2E9; --bad:#B42318; --bad-bg:#FBE6E3; --warn:#9A6200; --warn-bg:#FBF0D9;
-  --info:#28568F; --info-bg:#E3ECF7; --prev:#9AA6B6;
+  --info:#28568F; --info-bg:#E3ECF7; --prev:#9AA6B6; --ai:#6B4FA0;
   --mast-fg:#FFFFFF; --mast-muted:#B9C7DA; --mast-body:#DCE5F1; --mast-accent:#F3A57D;
   --f-display:"Barlow Semi Condensed","Arial Narrow",Arial,sans-serif;
   --f-body:"Barlow","Segoe UI",Arial,sans-serif;
@@ -20,12 +20,12 @@
   --navy:#0A1F3B; --navy-ink:#9DBBE3; --orange:#F0844D; --orange-soft:#3A2418;
   --bg:#0F151D; --surface:#17202B; --fg:#E7ECF2; --muted:#9AA6B6; --line:#2A3542; --track:#26313E;
   --good:#5CC48C; --good-bg:#16301F; --bad:#F2877B; --bad-bg:#3A1A17; --warn:#E6B65A; --warn-bg:#332710;
-  --info:#8EB4E8; --info-bg:#172A42; --prev:#5E6B7B; --mast-fg:#FFFFFF; --mast-muted:#9DB0C8; --mast-body:#DCE5F1; --mast-accent:#F3A57D; color-scheme:dark}}
+  --info:#8EB4E8; --info-bg:#172A42; --prev:#5E6B7B; --ai:#B9A2E6; --mast-fg:#FFFFFF; --mast-muted:#9DB0C8; --mast-body:#DCE5F1; --mast-accent:#F3A57D; color-scheme:dark}}
 :root[data-theme="dark"]{
   --navy:#0A1F3B; --navy-ink:#9DBBE3; --orange:#F0844D; --orange-soft:#3A2418;
   --bg:#0F151D; --surface:#17202B; --fg:#E7ECF2; --muted:#9AA6B6; --line:#2A3542; --track:#26313E;
   --good:#5CC48C; --good-bg:#16301F; --bad:#F2877B; --bad-bg:#3A1A17; --warn:#E6B65A; --warn-bg:#332710;
-  --info:#8EB4E8; --info-bg:#172A42; --prev:#5E6B7B; --mast-fg:#FFFFFF; --mast-muted:#9DB0C8; --mast-body:#DCE5F1; --mast-accent:#F3A57D; color-scheme:dark}
+  --info:#8EB4E8; --info-bg:#172A42; --prev:#5E6B7B; --ai:#B9A2E6; --mast-fg:#FFFFFF; --mast-muted:#9DB0C8; --mast-body:#DCE5F1; --mast-accent:#F3A57D; color-scheme:dark}
 
 *{box-sizing:border-box}
 body{background:var(--bg);color:var(--fg);font-family:var(--f-body);font-size:15px;line-height:1.5;padding-block:0 56px}
@@ -199,6 +199,7 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
 <nav class="toc" aria-label="Sections">
   <a href="#summary">Summary</a>
   <a href="#contracts">Current contracts</a>
+  <a href="#history">Cost history</a>
   <a href="#products">Products we license</a>
   <a href="#ecosystem">How it connects</a>
   <a href="#lifecycle">Support lifecycle</a>
@@ -248,6 +249,22 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     <span>XM + Content Hub + Extended Support: <b>$492,023</b></span>
     <span>Coveo search (separate vendor, through Feb 2029): <b>$34,848/yr</b></span>
   </div>
+</section>
+
+<!-- HISTORY -->
+<section id="history">
+  <header><div class="label">Cost history · 2021–2028</div><h2>What AWS has paid Sitecore each year, and what's next</h2>
+    <p>Cost of each Sitecore product by the start year of its term or order. Spend doubled from 2021 to 2023 as XM, Managed Cloud and Sitecore 360 were added, and peaked in 2024 with Personalize. In 2025 XM, Managed Cloud, Personalize and Sitecore 360 were combined into one bundle. The 2026 renewal is the highest yet at $492,023: the combined bundle at $225,100 (+3%), Content Hub at $247,958 (+5%) and 12 months of Extended Support at $18,965. The 2027 and 2028 columns are estimates: 2027 stays on 10.2 under the recommended plan, and 2028 is the move to SitecoreAI.</p></header>
+  <div class="chart">
+    <div class="legend" id="histLegend"></div>
+    <div class="svgbox"><svg id="histChart" viewBox="0 0 900 300" role="img" aria-label="Sitecore cost per year by product group, 2021 to 2026"></svg></div>
+  </div>
+  <div class="tbl" id="histTbl"></div>
+  <div class="callout"><b>How the 2027 and 2028 estimates are built</b>
+    <p><b>2027 · stay on XM 10.2: about $501,691.</b> Combined bundle $231,853 (2026 + 3%), Content Hub $260,356 (2026 + 5%), and $9,482 to extend Extended Support through 31 Dec 2027 (the 18-month price of $28,447 minus the $18,965 already in 2026).</p>
+    <p><b>2028 · migrate to SitecoreAI: about $983,962.</b> SitecoreAI license $483,962 (Year 1 quote from the Options Summary; it replaces the bundle, Content Hub and Extended Support) plus about $500,000 for implementation. From 2029 the cost drops back to the license alone, about $501,292 a year, with 3–4% annual increases.</p>
+    <p>Not included: Coveo, or Coveo Gen AI ($99,360 a year plus $75,875 to implement), which Sitecore Search may replace. The license quote is in 2026 prices, so a 2028 start may cost more, and running 10.2 alongside the new platform during the migration would add cost.</p></div>
+  <p class="note">All amounts USD. Year = start year of the term or order. A dash means no price for that year in the contract documents. 2025 shows no Content Hub price in those documents. Totals mix contract-schedule fees and invoices. 2026 figures are the current renewal amounts from the Sitecore License Upgrade Options Summary (see Current contracts). 2027 and 2028 are estimates, shown lighter with a dashed outline.</p>
 </section>
 
 <!-- PRODUCTS -->
@@ -617,6 +634,43 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
       svg.append(el('text', {x:x(r.total)+8, y:y+16, 'font-size':12.5, 'font-weight':700, 'font-family':'var(--f-body)', fill:'var(--fg)', style:'font-variant-numeric:tabular-nums'}, fmtK(r.total)));
     });
     svg.setAttribute('viewBox', `0 0 900 ${top + rowH*five.length + 26}`);
+  })();
+
+  /* ---------- Cost history ---------- */
+  (function(){
+    const YRS=[2021,2022,2023,2024,2025,2026,2027,2028]; const EST=[2027,2028];
+    const G={ch:['Content Hub','var(--navy-ink)'],xm:['XM & Managed Cloud','var(--info)'],per:['Personalize','var(--good)'],s360:['Sitecore 360','var(--warn)'],ext:['Extended Support','var(--bad)'],bun:['Combined bundle','var(--orange)'],ai:['SitecoreAI license','var(--ai)'],impl:['SitecoreAI implementation','var(--prev)']};
+    const H=[
+      ['Content Hub Corporate','DAM / MRM / CMP, incl. Managed Services & 24×7 Support','ch',[127195,157195,157195,224904.76,null,247958,260356,null]],
+      ['DAM Corporate, Premium Managed Services','2 non-prod; prorated','ch',[33107,null,null,null,null,null,null,null]],
+      ['Experience Management (XM) Corporate','Tier 1 license','xm',[null,45300,45300,45300,null,null,null,null]],
+      ['Managed Cloud','MC Standard, Core XM','xm',[null,78948,92988,92988,null,null,null,null]],
+      ['Sitecore Personalize','','per',[null,null,null,42300,null,null,null,null]],
+      ['Sitecore360 Bundle','','s360',[null,null,17700,null,null,null,null,null]],
+      ['Add-on: 10 additional concurrent users','','xm',[null,null,15000,null,null,null,null,null]],
+      ['Add-on: Sitecore360 Bundle (additional)','','s360',[null,null,3000,null,null,null,null,null]],
+      ['Extended Support','XM 10.2','ext',[null,null,null,null,23315,18965,9482,null]],
+      ['Combined bundle','Experience Manager, Managed Cloud XM Standard, Personalize, Sitecore360 Plus (Contract A)','bun',[null,null,null,null,218533.92,225100,231853,null]],
+      ['SitecoreAI license (estimate)','XM Cloud, CDP, Stream, Search, Personalize, Content Hub DAM, Agentic Studio, Sitecore 360','ai',[null,null,null,null,null,null,null,483962]],
+      ['SitecoreAI implementation (estimate)','One-time · Next.js front end and migration, 4–6+ months','impl',[null,null,null,null,null,null,null,500000]]
+    ];
+    const f2=v=>'$'+v.toLocaleString('en-US',{minimumFractionDigits:2,maximumFractionDigits:2});
+    const tot=YRS.map((_,i)=>H.reduce((a,r)=>a+(r[3][i]||0),0));
+    document.getElementById('histTbl').innerHTML='<table><thead><tr><th>Product</th>'+YRS.map(y=>'<th>'+y+(EST.includes(y)?'<br>(est.)':'')+'</th>').join('')+'</tr></thead><tbody>'+
+      H.map(r=>'<tr><td>'+r[0]+(r[1]?'<small>'+r[1]+'</small>':'')+'</td>'+r[3].map(v=>v==null?'<td class="dim">–</td>':'<td>'+f2(v)+'</td>').join('')+'</tr>').join('')+
+      '<tr><td class="tot">Total (USD)</td>'+tot.map(v=>'<td class="tot">'+f2(v)+'</td>').join('')+'</tr></tbody></table>';
+    document.getElementById('histLegend').innerHTML=Object.values(G).map(([l,c])=>'<span><i style="background:'+c+'"></i>'+l+'</span>').join('');
+    const svg=document.getElementById('histChart');
+    const L=70,Rr=880,T=24,B=260,max=1000000,y=v=>B-(v/max)*(B-T),bw=72,step=(Rr-L)/YRS.length;
+    for(let v=0;v<=max;v+=200000){svg.append(el('line',{x1:L,x2:Rr,y1:y(v),y2:y(v),stroke:'var(--line)','stroke-width':1}));
+      svg.append(el('text',{x:L-8,y:y(v)+4,'text-anchor':'end','font-size':11.5,fill:'var(--muted)'},v===0?'$0':v>=1e6?'$1M':'$'+v/1000+'k'))}
+    YRS.forEach((yr,i)=>{const x=L+i*step+(step-bw)/2;let acc=0;
+      Object.keys(G).forEach(k=>{const v=H.filter(r=>r[2]===k).reduce((a,r)=>a+(r[3][i]||0),0);if(!v)return;
+        svg.append(el('rect',{x:x,y:y(acc+v),width:bw,height:y(acc)-y(acc+v)-1,fill:G[k][1],opacity:EST.includes(yr)?.6:1}));acc+=v});
+      svg.append(el('text',{x:x+bw/2,y:y(acc)-8,'text-anchor':'middle','font-size':13,'font-weight':700,fill:'var(--fg)',style:'font-variant-numeric:tabular-nums'},fmtK(acc)));
+      svg.append(el('text',{x:x+bw/2,y:B+20,'text-anchor':'middle','font-size':12.5,fill:'var(--muted)'},String(yr)));
+      if(EST.includes(yr)){svg.append(el('rect',{x:x-0.5,y:y(acc)-0.5,width:bw+1,height:B-y(acc)+0.5,fill:'none',stroke:'var(--fg)','stroke-width':1.2,'stroke-dasharray':'4 3'}));svg.append(el('text',{x:x+bw/2,y:B+36,'text-anchor':'middle','font-size':11,fill:'var(--muted)'},'estimate'))}});
+    svg.setAttribute('viewBox','0 0 900 304');
   })();
 
   /* ---------- Lifecycle ---------- */
