@@ -234,8 +234,8 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     <div class="contract">
       <span class="tag">Contract B · Content Hub</span>
       <span class="amt">$247,958</span>
-      <span class="note">Jun 12, 2025 – Jun 13, 2026 · renewing at 5%</span>
-      <ul><li>DAM, CMP and MRM</li><li>Content Hub cost in 2021 was $157,195</li></ul>
+      <span class="note">2026–27 renewal · +5% on the 2025–26 invoice of $236,149.98</span>
+      <ul><li>DAM, CMP and MRM, plus Premium Managed Services (2 non-production environments)</li><li>Base fee since 2021: $157,195 Content Hub Corporate + $57,000 Premium Managed Services = $214,195</li><li>Auto-renews for 12 months at +5% each year after the 36-month term (2021–2024)</li><li>Invoice INVUS152684: Jun 14, 2025 – Jun 13, 2026, $236,149.98</li></ul>
     </div>
     <div class="contract">
       <span class="tag">Contract C · Extended Support</span>
@@ -254,7 +254,7 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
 <!-- HISTORY -->
 <section id="history">
   <header><div class="label">Cost history · 2021–2028</div><h2>What AWS has paid Sitecore each year, and what's next</h2>
-    <p>Cost of each Sitecore product by the start year of its term or order. Spend doubled from 2021 to 2023 as XM, Managed Cloud and Sitecore 360 were added, and peaked in 2024 with Personalize. In 2025 XM, Managed Cloud, Personalize and Sitecore 360 were combined into one bundle. The 2026 renewal is the highest yet at $492,023: the combined bundle at $225,100 (+3%), Content Hub at $247,958 (+5%) and 12 months of Extended Support at $18,965. The 2027 and 2028 columns are estimates: 2027 stays on 10.2 under the recommended plan, and 2028 is the move to SitecoreAI.</p></header>
+    <p>Cost of each Sitecore product by the start year of its term or order. Spend has risen every year: it doubled from 2021 to 2023 as XM, Managed Cloud and Sitecore 360 were added, and Personalize followed in 2024. In 2025 XM, Managed Cloud, Personalize and Sitecore 360 were combined into one bundle, and Content Hub renewed at $236,149.98. The 2026 renewal is the highest yet at $492,023: the combined bundle at $225,100 (+3%), Content Hub at $247,958 (+5%) and 12 months of Extended Support at $18,965. The 2027 and 2028 columns are estimates: 2027 stays on 10.2 under the recommended plan, and 2028 is the move to SitecoreAI.</p></header>
   <div class="chart">
     <div class="legend" id="histLegend"></div>
     <div class="svgbox"><svg id="histChart" viewBox="0 0 900 300" role="img" aria-label="Sitecore cost per year by product group, 2021 to 2026"></svg></div>
@@ -264,7 +264,7 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     <p><b>2027 · stay on XM 10.2: about $501,691.</b> Combined bundle $231,853 (2026 + 3%), Content Hub $260,356 (2026 + 5%), and $9,482 to extend Extended Support through 31 Dec 2027 (the 18-month price of $28,447 minus the $18,965 already in 2026).</p>
     <p><b>2028 · migrate to SitecoreAI: about $983,962.</b> SitecoreAI license $483,962 (Year 1 quote from the Options Summary; it replaces the bundle, Content Hub and Extended Support) plus about $500,000 for implementation. From 2029 the cost drops back to the license alone, about $501,292 a year, with 3–4% annual increases.</p>
     <p>Not included: Coveo, or Coveo Gen AI ($99,360 a year plus $75,875 to implement), which Sitecore Search may replace. The license quote is in 2026 prices, so a 2028 start may cost more, and running 10.2 alongside the new platform during the migration would add cost.</p></div>
-  <p class="note">All amounts USD. Year = start year of the term or order. A dash means no price for that year in the contract documents. 2025 shows no Content Hub price in those documents. Totals mix contract-schedule fees and invoices. 2026 figures are the current renewal amounts from the Sitecore License Upgrade Options Summary (see Current contracts). 2027 and 2028 are estimates, shown lighter with a dashed outline.</p>
+  <p class="note">All amounts USD. Year = start year of the term or order. A dash means no price for that year in the contract documents. The 2025 Content Hub amount comes from invoice INVUS152684 (Jun 14, 2025 – Jun 13, 2026): the $214,195 base increased 5% for 2024 and again for 2025. Totals mix contract-schedule fees and invoices. 2026 figures are the current renewal amounts from the Sitecore License Upgrade Options Summary (see Current contracts). 2027 and 2028 are estimates, shown lighter with a dashed outline.</p>
 </section>
 
 <!-- PRODUCTS -->
@@ -641,7 +641,7 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     const YRS=[2021,2022,2023,2024,2025,2026,2027,2028]; const EST=[2027,2028];
     const G={ch:['Content Hub','var(--navy-ink)'],xm:['XM & Managed Cloud','var(--info)'],per:['Personalize','var(--good)'],s360:['Sitecore 360','var(--warn)'],ext:['Extended Support','var(--bad)'],bun:['Combined bundle','var(--orange)'],ai:['SitecoreAI license','var(--ai)'],impl:['SitecoreAI implementation','var(--prev)']};
     const H=[
-      ['Content Hub Corporate','DAM / MRM / CMP, incl. Managed Services & 24×7 Support','ch',[127195,157195,157195,224904.76,null,247958,260356,null]],
+      ['Content Hub Corporate','DAM / MRM / CMP, incl. Managed Services & 24×7 Support · from 2024 includes Premium Managed Services ($57,000 base)','ch',[127195,157195,157195,224904.76,236149.98,247958,260356,null]],
       ['DAM Corporate, Premium Managed Services','2 non-prod; prorated','ch',[33107,null,null,null,null,null,null,null]],
       ['Experience Management (XM) Corporate','Tier 1 license','xm',[null,45300,45300,45300,null,null,null,null]],
       ['Managed Cloud','MC Standard, Core XM','xm',[null,78948,92988,92988,null,null,null,null]],
