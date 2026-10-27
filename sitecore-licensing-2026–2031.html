@@ -46,7 +46,12 @@ header.top .logo{grid-column:1;grid-row:1/3;width:72px;height:72px;display:block
 header.top > .label,header.top > h1{grid-column:2}
 header.top > .label{align-self:end}
 header.top > h1{align-self:start}
-header.top .lede,header.top .meta{grid-column:1/-1}
+header.top .lede,header.top .mast-actions{grid-column:1/-1;display:flex;flex-wrap:wrap;align-items:center;gap:8px 14px}
+.pdf-btn{font:600 13px var(--f-body);color:var(--mast-fg);background:transparent;border:1px solid rgba(255,255,255,.45);border-radius:999px;padding:6px 14px;cursor:pointer}
+.pdf-btn:hover{background:rgba(255,255,255,.1);border-color:var(--mast-fg)}
+.pdf-btn:disabled{opacity:.6;cursor:progress}
+.pdf-status{font-size:13px;color:var(--mast-muted)}
+header.top .meta{grid-column:1/-1}
 @media (max-width:560px){header.top .logo{width:52px;height:52px}}
 header.top .label{color:var(--mast-muted)}
 header.top h1{font-size:clamp(28px,4.4vw,42px);font-weight:700;color:var(--mast-fg)}
@@ -192,6 +197,7 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     <span>Sources: <em>Sitecore License Upgrade Options Summary (2026)</em> and <em>Sitecore License Contract Review</em> workbook</span>
     <span>October 2026</span>
   </div>
+  <div class="mast-actions"><button type="button" id="pdfBtn" class="pdf-btn" hidden>Download as PDF</button><span id="pdfStatus" class="pdf-status" role="status" aria-live="polite"></span></div>
 </header>
 </div></div>
 <div class="wrap">
@@ -700,6 +706,270 @@ footer{margin-top:40px;border-top:2px solid var(--line);padding-top:14px;font-si
     svg.append(el('line', {x1:x(now), x2:x(now), y1:top-8, y2:top+rh*rows.length+2, stroke:'var(--orange)', 'stroke-width':2.5}));
     svg.setAttribute('viewBox', `0 0 900 ${top + rh*rows.length + 24}`);
   })();
+})();
+</script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf@2.5.1/dist/jspdf.umd.min.js"></script>
+<script src="https://cdn.jsdelivr.net/npm/jspdf-autotable@3.8.2/dist/jspdf.plugin.autotable.min.js"></script>
+<script>
+(function(){
+  const btn = document.getElementById('pdfBtn'), status = document.getElementById('pdfStatus');
+  let downloads = null;
+  if (window.claude && window.claude.use) {
+    window.claude.use('downloads').then(d => { downloads = d; if (d && window.jspdf) btn.hidden = false; }).catch(()=>{});
+  }
+  const say = t => { status.textContent = t; };
+
+  /* ---- text helpers ---- */
+  const clean = s => (s||'').replace(/\s+/g,' ').replace(/→/g,'->').replace(/↔/g,'<->').replace(/[◆▲▼]/g,'')
+    .replace(/×/g,'x').replace(/≈/g,'~').replace(/[‑‐]/g,'-').replace(/ /g,' ').trim();
+  const T = el => clean(el ? el.textContent : '');
+
+  /* ---- SVG -> PNG with resolved light-theme colors ---- */
+  const PROPS = ['fill','stroke','stroke-width','stroke-dasharray','opacity','fill-opacity','font-size','font-weight','text-anchor','dominant-baseline'];
+  function svgToPng(svg, scale){
+    return new Promise((resolve, reject) => {
+      const vb = svg.viewBox.baseVal, W = vb.width, H = vb.height;
+      const clone = svg.cloneNode(true);
+      const src = [svg, ...svg.querySelectorAll('*')], dst = [clone, ...clone.querySelectorAll('*')];
+      src.forEach((s, i) => {
+        const d = dst[i];
+        if (s.tagName.toLowerCase() === 'style') { d.remove(); return; }
+        const cs = getComputedStyle(s);
+        PROPS.forEach(p => { const v = cs.getPropertyValue(p); if (v) d.setAttribute(p, v); });
+        d.removeAttribute('class'); d.removeAttribute('style');
+        if (s.tagName.toLowerCase() === 'text') d.setAttribute('font-family', 'Helvetica, Arial, sans-serif');
+      });
+      clone.setAttribute('xmlns', 'http://www.w3.org/2000/svg');
+      clone.setAttribute('width', W); clone.setAttribute('height', H);
+      clone.removeAttribute('role');
+      const xml = new XMLSerializer().serializeToString(clone);
+      const img = new Image();
+      img.onload = () => {
+        const c = document.createElement('canvas'); c.width = W*scale; c.height = H*scale;
+        const g = c.getContext('2d'); g.fillStyle = '#ffffff'; g.fillRect(0,0,c.width,c.height);
+        g.drawImage(img, 0, 0, c.width, c.height);
+        resolve({data: c.toDataURL('image/png'), w: W, h: H});
+      };
+      img.onerror = () => reject(new Error('chart render failed'));
+      img.src = 'data:image/svg+xml;charset=utf-8,' + encodeURIComponent(xml);
+    });
+  }
+
+  async function build(){
+    const root = document.documentElement, prevTheme = root.getAttribute('data-theme');
+    root.setAttribute('data-theme','light');
+    const imgs = {};
+    try {
+      for (const [k, sel] of [['eco','#ecosystem .frame svg'],['hist','#histChart'],['life','#lifeChart'],['five','#fiveChart']]) {
+        const el = document.querySelector(sel); if (el) imgs[k] = await svgToPng(el, 2);
+      }
+    } finally { if (prevTheme === null) root.removeAttribute('data-theme'); else root.setAttribute('data-theme', prevTheme); }
+
+    const { jsPDF } = window.jspdf;
+    const doc = new jsPDF({unit:'pt', format:'letter'});
+    const PW = doc.internal.pageSize.getWidth(), PH = doc.internal.pageSize.getHeight();
+    const M = 44, CW = PW - 2*M, TOP = 50, BOT = PH - 46;
+    const NAVY=[11,43,83], ORANGE=[201,83,27], FG=[24,34,47], MUTED=[91,102,117], LINE=[220,224,230], SOFT=[247,227,216], BG=[244,245,247];
+    let y = TOP;
+    const ensure = h => { if (y + h > BOT) { doc.addPage(); y = TOP; } };
+    const para = (text, o={}) => {
+      const size = o.size||9.5, lh = size*1.38, x = M + (o.indent||0), w = (o.width||CW) - (o.indent||0);
+      doc.setFont('helvetica', o.bold?'bold':'normal'); doc.setFontSize(size); doc.setTextColor(...(o.color||FG));
+      const lines = doc.splitTextToSize(clean(text), w);
+      lines.forEach(l => { ensure(lh); doc.text(l, x, y + size); y += lh; });
+      y += (o.after==null?4:o.after);
+    };
+    const bullets = (items, o={}) => items.forEach(t => {
+      const size = o.size||9; ensure(size*1.4);
+      doc.setFillColor(...(o.dot||MUTED)); doc.circle(M + (o.indent||0) + 3, y + size*0.62, 1.4, 'F');
+      para(t, {size, indent:(o.indent||0)+11, after:1, color:o.color});
+    });
+    const section = (id) => {
+      const sec = document.getElementById(id); if (!sec) return null;
+      ensure(70); y += 10;
+      const lab = sec.querySelector(':scope > header .label'), h2 = sec.querySelector(':scope > header h2');
+      doc.setFont('helvetica','bold'); doc.setFontSize(8); doc.setTextColor(...ORANGE);
+      doc.text(T(lab).toUpperCase(), M, y + 8); y += 13;
+      doc.setFontSize(15); doc.setTextColor(...NAVY);
+      doc.splitTextToSize(T(h2), CW).forEach(l => { doc.text(l, M, y + 14); y += 18; });
+      doc.setDrawColor(...LINE); doc.setLineWidth(1.5); doc.line(M, y + 2, PW - M, y + 2); y += 10;
+      const p = sec.querySelector(':scope > header p'); if (p) para(T(p), {color:MUTED, after:8});
+      return sec;
+    };
+    const image = (im, maxW) => {
+      if (!im) return; const w = Math.min(maxW||CW, CW), h = w * im.h / im.w;
+      ensure(h + 8); doc.addImage(im.data, 'PNG', M, y, w, h); y += h + 10;
+    };
+    const table = (tbl, opts={}) => {
+      if (!tbl) return;
+      const body = [], head = [];
+      tbl.querySelectorAll('thead tr').forEach(tr => head.push([...tr.children].map(c => clean(c.innerText || c.textContent))));
+      tbl.querySelectorAll('tbody tr').forEach(tr => {
+        const rec = tr.classList.contains('rec');
+        body.push([...tr.children].map((c,i) => {
+          const main = c.childNodes.length && c.querySelector('small') ? clean(c.firstChild.textContent) : clean(c.textContent);
+          const sm = c.querySelector('small');
+          return {content: sm ? main + '\n' + clean(sm.textContent) : main,
+                  styles: Object.assign({}, rec ? {fillColor:SOFT} : {}, c.classList.contains('tot') ? {fontStyle:'bold'} : {}, i===0 ? {fontStyle:'bold'} : {})};
+        }));
+      });
+      ensure(40);
+      doc.autoTable({head, body, startY:y, margin:{left:M, right:M}, theme:'grid',
+        styles:{font:'helvetica', fontSize:opts.fs||7.2, cellPadding:3.2, textColor:FG, lineColor:LINE, lineWidth:0.5, halign:'right', valign:'top', overflow:'linebreak'},
+        headStyles:{fillColor:NAVY, textColor:[255,255,255], fontStyle:'bold', halign:'right', valign:'bottom'},
+        columnStyles:{0:{halign:'left', cellWidth:opts.first||120}},
+        didParseCell: d => { if (d.column.index===0) d.cell.styles.halign='left'; },
+      });
+      y = doc.lastAutoTable.finalY + 12;
+    };
+    const subhead = t => { ensure(24); doc.setFont('helvetica','bold'); doc.setFontSize(10.5); doc.setTextColor(...NAVY); doc.text(clean(t), M, y + 10); y += 16; };
+    const callout = el => { if (!el) return;
+      const parts = [...el.children].map(c => ({t:T(c), b:c.tagName==='B'}));
+      const startPage = doc.getNumberOfPages(), y0 = y; y += 6;
+      parts.forEach(p => para(p.t, {size:p.b?10:9, bold:p.b, indent:12, after:3}));
+      if (doc.getNumberOfPages() === startPage) { doc.setFillColor(...ORANGE); doc.rect(M, y0, 3, y - y0, 'F'); }
+      y += 6;
+    };
+
+    /* ---- masthead ---- */
+    const bandH = 118;
+    doc.setFillColor(...NAVY); doc.rect(0, 0, PW, bandH, 'F'); doc.setFillColor(...ORANGE); doc.rect(0, bandH, PW, 4, 'F');
+    const logo = document.querySelector('header.top .logo');
+    let tx = M; if (logo) { try { doc.addImage(logo.src, 'PNG', M, 26, 54, 54); tx = M + 70; } catch(e){} }
+    doc.setTextColor(185,199,218); doc.setFont('helvetica','bold'); doc.setFontSize(8);
+    doc.text(T(document.querySelector('header.top .label')).toUpperCase(), tx, 34);
+    doc.setTextColor(255,255,255); doc.setFontSize(20);
+    const tl = doc.splitTextToSize(T(document.querySelector('header.top h1')), PW - tx - M); tl.forEach((l,i) => doc.text(l, tx, 58 + i*23));
+    doc.setFont('helvetica','normal'); doc.setFontSize(8.5); doc.setTextColor(220,229,241);
+    doc.text(doc.splitTextToSize([...document.querySelectorAll('header.top .meta span')].map(T).join('   ·   '), PW - tx - M), tx, 58 + tl.length*23 + 4);
+    y = bandH + 22;
+    para(T(document.querySelector('header.top .lede')), {size:10.5, color:FG, after:8});
+
+    /* ---- summary ---- */
+    section('summary');
+    const keys = [...document.querySelectorAll('#summary .key')], kw = (CW - 3*8) / 4;
+    ensure(112);
+    keys.forEach((k,i) => {
+      const x = M + i*(kw+8), rec = k.classList.contains('rec');
+      doc.setFillColor(...(rec?SOFT:BG)); doc.setDrawColor(...(rec?ORANGE:LINE)); doc.setLineWidth(0.8); doc.roundedRect(x, y, kw, 106, 4, 4, 'FD');
+      doc.setFont('helvetica','bold'); doc.setFontSize(6.8); doc.setTextColor(...(rec?ORANGE:MUTED)); doc.text(T(k.querySelector('.label')).toUpperCase(), x+8, y+14);
+      const v = T(k.querySelector('.v')); doc.setTextColor(...FG); doc.setFontSize(rec?9.5:15);
+      const vl = doc.splitTextToSize(v, kw-16).slice(0,4); vl.forEach((l,j)=>doc.text(l, x+8, y+32+j*(rec?11:16)));
+      doc.setFont('helvetica','normal'); doc.setFontSize(7); doc.setTextColor(...MUTED);
+      const sy = y + 34 + vl.length*(rec?11:16); doc.splitTextToSize(T(k.querySelector('.s')), kw-16).slice(0,5).forEach((l,j)=>doc.text(l, x+8, sy+j*9));
+    });
+    y += 118;
+
+    /* ---- contracts ---- */
+    section('contracts');
+    document.querySelectorAll('#contracts .contract').forEach(c => {
+      subhead(T(c.querySelector('.tag')) + '  —  ' + T(c.querySelector('.amt')));
+      para(T(c.querySelector('.note')), {size:8.5, color:MUTED, after:2});
+      bullets([...c.querySelectorAll('li')].map(T)); y += 4;
+    });
+    para([...document.querySelectorAll('#contracts .totals span')].map(T).join('   |   '), {size:9, bold:true, after:6});
+
+    /* ---- cost history ---- */
+    section('history');
+    image(imgs.hist);
+    table(document.querySelector('#histTbl table'), {fs:6.6, first:118});
+    callout(document.querySelector('#history .callout'));
+    para(T(document.querySelector('#history > p.note')), {size:8, color:MUTED});
+
+    /* ---- products ---- */
+    section('products');
+    document.querySelectorAll('#products .product').forEach(p => {
+      subhead(T(p.querySelector('h3')));
+      para(T(p.querySelector('.what p')), {size:9, after:2});
+      para('Entitlements: ' + [...p.querySelectorAll('.spec')].map(T).join(' · '), {size:8.5, color:NAVY, after:2});
+      para(T(p.querySelector('.where')), {size:8, color:MUTED, after:6});
+    });
+
+    /* ---- ecosystem ---- */
+    section('ecosystem');
+    image(imgs.eco);
+    document.querySelectorAll('#ecosystem .flow').forEach(f => {
+      const n = T(f.querySelector('.n')); para((n ? n + '. ' : '') + T(f.querySelector('b')), {size:9.5, bold:true, after:1});
+      para(T(f.querySelector('span:not(.n)')), {size:8.8, color:MUTED, indent:12, after:5});
+    });
+    callout(document.querySelector('#ecosystem .callout'));
+
+    /* ---- lifecycle ---- */
+    section('lifecycle');
+    para('Legend: ' + [...document.querySelectorAll('#lifecycle .legend span')].map(T).join(' · '), {size:8, color:MUTED, after:2});
+    image(imgs.life);
+    para(T(document.querySelector('#lifecycle .chart .note')), {size:8, color:MUTED});
+
+    /* ---- options ---- */
+    section('options');
+    document.querySelectorAll('#optList .opt').forEach(o => {
+      ensure(90);
+      const h3 = o.querySelector('h3'), pill = h3.querySelector('.pill');
+      const title = clean([...h3.childNodes].filter(n => n !== pill).map(n => n.textContent).join(''));
+      const y1 = o.querySelector('.y1'), y1sm = y1.querySelector('small');
+      const y1v = clean([...y1.childNodes].filter(n => n !== y1sm).map(n => n.textContent).join(''));
+      doc.setDrawColor(...(o.classList.contains('rec')?ORANGE:LINE)); doc.setLineWidth(1.5); doc.line(M, y, PW-M, y); y += 6;
+      subhead(title + (pill ? '  [' + T(pill) + ']' : ''));
+      para(y1v + '  ·  ' + T(y1sm), {size:10, bold:true, color:o.classList.contains('rec')?ORANGE:NAVY, after:4});
+      o.querySelectorAll('.grid > div').forEach(g => {
+        para(T(g.querySelector('.label')), {size:8, bold:true, color:ORANGE, after:1});
+        bullets([...g.querySelectorAll('li')].map(T), {size:8.6}); y += 2;
+      });
+      para([...o.querySelectorAll('.specs .spec')].map(T).join('  ·  '), {size:8.3, color:MUTED, after:10});
+    });
+
+    /* ---- year 1 ---- */
+    section('year1');
+    subhead(T(document.getElementById('tab-cur')));
+    table(document.querySelector('#y1-cur table'), {fs:7, first:120});
+    subhead(T(document.getElementById('tab-crga')));
+    table(document.querySelector('#y1-crga table'), {fs:6.4, first:100});
+    para(T(document.querySelector('#year1 > p.note')), {size:8, color:MUTED});
+
+    /* ---- five year ---- */
+    section('fiveyear');
+    image(imgs.five);
+    table(document.querySelector('#fiveTbl table'), {fs:7, first:130});
+
+    /* ---- roadmap ---- */
+    section('roadmap');
+    document.querySelectorAll('#roadmap .step').forEach(s => {
+      ensure(46);
+      para(T(s.querySelector('.when')).toUpperCase(), {size:8, bold:true, color:s.classList.contains('now')?ORANGE:MUTED, after:0});
+      para(T(s.querySelector('p')), {size:9, indent:0, after:6});
+    });
+    callout(document.querySelector('#roadmap .callout'));
+    para(T(document.querySelector('footer')), {size:7.5, color:MUTED});
+
+    /* ---- page footers ---- */
+    const n = doc.getNumberOfPages(), stamp = new Date().toLocaleDateString('en-US',{year:'numeric',month:'short',day:'numeric'});
+    for (let i = 1; i <= n; i++) {
+      doc.setPage(i); doc.setFont('helvetica','normal'); doc.setFontSize(7.5); doc.setTextColor(...MUTED);
+      doc.setDrawColor(...LINE); doc.setLineWidth(0.5); doc.line(M, PH-32, PW-M, PH-32);
+      doc.text('aws.org Sitecore Licensing 2026–2031 · American Welding Society · Generated ' + stamp, M, PH-20);
+      doc.text('Page ' + i + ' of ' + n, PW-M, PH-20, {align:'right'});
+    }
+    return doc.output('blob');
+  }
+
+  btn.addEventListener('click', async () => {
+    if (!downloads) return;
+    btn.disabled = true; say('Preparing PDF…');
+    try {
+      const blob = await build();
+      say('Confirm the download to save the PDF.');
+      await downloads.save({filename:'aws-org-sitecore-licensing-2026-2031.pdf', data: blob});
+      say('PDF saved.');
+    } catch (e) {
+      const code = e && e.code;
+      if (code === 'declined') say('');
+      else if (code === 'rate_limited') say('A download prompt is already open. Try again in a moment.');
+      else if (['unavailable','not_granted','capability_disabled','capability_removed'].includes(code)) { say('Downloads aren\'t available in this view.'); btn.hidden = true; }
+      else say('The PDF could not be created. Reload the page and try again.');
+      if (!code) console.error(e);
+    } finally { btn.disabled = false; }
+  });
+  window.__buildAwsPdf = build;
 })();
 </script>
 
